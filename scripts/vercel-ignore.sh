@@ -6,6 +6,8 @@ if [ -n "${VERCEL_GIT_COMMIT_REF:-}" ] && [ "$VERCEL_GIT_COMMIT_REF" != "main" ]
 base="${VERCEL_GIT_PREVIOUS_SHA:-}"
 [ -z "$base" ] && base="$(git rev-parse -q --verify HEAD^ 2>/dev/null)"
 if [ -z "$base" ]; then echo "ignore: no base commit, building"; exit 1; fi
+# Same commit as the last deploy = a manual redeploy (usually to pick up new env vars), so always build.
+if [ "$base" = "$(git rev-parse HEAD 2>/dev/null)" ]; then echo "ignore: redeploy of ${base:0:7}, building"; exit 1; fi
 if ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
   git fetch -q --depth=100 origin "$base" 2>/dev/null || true
   if ! git cat-file -e "${base}^{commit}" 2>/dev/null; then echo "ignore: base ${base:0:7} not in clone, building"; exit 1; fi
