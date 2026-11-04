@@ -1,0 +1,73 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { business, story, barbers } from '../data/site';
+---
+<Layout title="Our Story | Four Generations of Torres Barbers | Kennesaw Barber Shop" description="From Puerto Rico in 1920 to Manhattan, Long Island, and Kennesaw, Georgia. Meet the Torres family and the barbers of Kennesaw Barber Shop.">
+  <section class="page-hero">
+    <div class="page-hero-bg" aria-hidden="true"><img src="/img/hero.jpg" alt="" /></div>
+    <div class="wrap center">
+      <p class="kicker both">The Torres Family · 1920+</p>
+      <h1 class="h1">From the past, <span class="it">into the future.</span></h1>
+      <p class="lede">A blend of old school craftsmen and the newest generation of barbers, redefining what classic means in barbering.</p>
+    </div>
+  </section>
+
+  <section class="section paper">
+    <div class="wrap timeline">
+      {story.map((s, i) => (
+        <article data-reveal style={`--d:${i * 0.05}s`}>
+          <span class="era">{s.era}</span>
+          <div>
+            <h2 class="h3">{s.title}</h2>
+            <p>{s.text}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="section woodgrain">
+    <div class="wrap duo">
+      <img src="/img/shop-1.jpg" alt="Barber at work" loading="lazy" data-reveal />
+      <div data-reveal style="--d:.1s">
+        <p class="kicker">Kennesaw Barber Shop</p>
+        <h2 class="h2">Father and son, <span class="it">one shop.</span></h2>
+        <p class="lede">Established in 2008 and purchased by Andrew in 2012, the shop brought the family’s New York and Georgia traditions together under one roof, with a fresh vision for the future of classic barbering.</p>
+        <a href={business.bookHref} class="btn" target="_blank" rel="noopener" style="margin-top:2rem">Book Your Chair</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="barbers" class="section paper">
+    <div class="wrap">
+      <div class="center">
+        <p class="kicker both">Meet the Barbers</p>
+        <h2 class="h2">The <span class="it">crew.</span></h2>
+      </div>
+      <div class="team">
+        {barbers.map((b, i) => (
+          <figure data-reveal style={`--d:${(i % 3) * 0.06}s`}>
+            <div class="ph"><img src={b.img} alt={`${b.name}, ${b.role}`} loading="lazy" width="540" height="600" /></div>
+            <figcaption><strong>{b.name}</strong><span>{b.role}</span></figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>
+<style>
+  .timeline { max-width: 880px; display: grid; gap: 0; }
+  .timeline article { display: grid; grid-template-columns: 150px 1fr; gap: 2rem; padding: 2rem 0; border-bottom: 1px solid rgba(107,29,34,0.18); }
+  .era { font-family: var(--serif); font-style: italic; font-size: 1.6rem; color: var(--ox); }
+  .timeline .h3 { margin-bottom: 0.5rem; }
+  .timeline p { color: #4b3c2c; }
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem, 6vw, 5rem); align-items: center; }
+  .duo img { width: 100%; aspect-ratio: 5/4; object-fit: cover; filter: sepia(0.3); border: 1px solid var(--line-2); padding: 8px; }
+  .team { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 3rem; }
+  .ph { border: 1px solid rgba(107,29,34,0.35); padding: 8px; background: #f7f0e2; }
+  .ph img { width: 100%; aspect-ratio: 9/10; object-fit: cover; filter: sepia(0.15); }
+  .team figcaption { text-align: center; margin-top: 0.9rem; display: flex; flex-direction: column; }
+  .team strong { font-family: var(--serif); font-weight: 500; font-size: 1.5rem; }
+  .team span { font-size: 0.72rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--ox); }
+  @media (max-width: 800px) { .duo { grid-template-columns: 1fr; } .team { grid-template-columns: 1fr 1fr; gap: 1.2rem; } .timeline article { grid-template-columns: 1fr; gap: 0.3rem; } }
+</style>

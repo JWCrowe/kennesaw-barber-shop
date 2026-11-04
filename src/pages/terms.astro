@@ -1,0 +1,22 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { business } from '../data/site';
+---
+<Layout title="Terms of Use | Kennesaw Barber Shop">
+  <section class="page-hero"><div class="wrap"><p class="kicker">Legal</p><h1 class="h1">Terms <span class="it">of Use.</span></h1></div></section>
+  <section class="section paper"><div class="wrap prose">
+    <p>Last updated November 4, 2026. By using this website you agree to these terms.</p>
+    <h2>Information on this site</h2>
+    <p>We work to keep services, prices, and hours accurate, but they can change without notice. Prices shown as a range depend on your barber and the service. The price at the shop is the final price.</p>
+    <h2>Appointments</h2>
+    <p>Appointments booked online are handled through Square and are subject to Square’s terms and any shop policies shown when you book. Please call {business.phone} if you need to change or cancel.</p>
+    <h2>Content</h2>
+    <p>Photos, logos, and text on this site belong to {business.name} and may not be reused without permission.</p>
+    <h2>Limitation of liability</h2>
+    <p>This site is provided as is. To the extent allowed by law, we are not liable for damages arising from use of the site.</p>
+    <h2>Governing law</h2>
+    <p>These terms are governed by the laws of the State of Georgia. Any dispute will be handled in the courts of Cobb County, Georgia.</p>
+    <h2>Contact</h2>
+    <p>{business.name}, {business.street}, {business.city}, GA {business.zip}. <a href={business.phoneHref}>{business.phone}</a>.</p>
+  </div></section>
+</Layout>

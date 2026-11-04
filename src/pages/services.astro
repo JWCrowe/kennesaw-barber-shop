@@ -1,0 +1,49 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { business, services } from '../data/site';
+const groups = [
+  { key: 'cuts', title: 'Haircuts', sub: 'Clippers, shears, and a proper finish.' },
+  { key: 'shaves', title: 'Shaves & Beards', sub: 'Hot lather and a steady straight razor.' },
+  { key: 'extras', title: 'Extras', sub: 'Add it to any service.' },
+] as const;
+---
+<Layout title="Services & Prices | Kennesaw Barber Shop" description="Haircuts, beard trims, hot lather shaves, head shaves, and military and law enforcement pricing at Kennesaw Barber Shop on Jiles Rd, Kennesaw, GA.">
+  <section class="page-hero">
+    <div class="page-hero-bg" aria-hidden="true"><img src="/img/shop-2.jpg" alt="" /></div>
+    <div class="wrap center">
+      <p class="kicker both">Services &amp; Prices</p>
+      <h1 class="h1">The <span class="it">Menu.</span></h1>
+      <p class="lede">Straightforward prices. Final price depends on your barber and the work your hair needs.</p>
+    </div>
+  </section>
+  <section class="section paper">
+    <div class="wrap">
+      <div class="card-frame board">
+        {groups.map((g) => (
+          <div class="grp" data-reveal>
+            <h2 class="h3">{g.title}</h2>
+            <p class="muted sub">{g.sub}</p>
+            <ul class="menu">
+              {services.filter((s) => s.group === g.key).map((s) => (
+                <li><span class="n">{s.name}</span><span class="dots"></span><span class="p">{s.price}</span>{s.note && <span class="note">{s.note}</span>}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+        <div class="orn"><span>✦ EST. 1920 ✦</span></div>
+        <div class="acts">
+          <a href={business.bookHref} class="btn btn-ox" target="_blank" rel="noopener">Book on Square</a>
+          <a href={business.phoneHref} class="btn btn-ghost">Call {business.phone}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+<style>
+  .board { max-width: 900px; margin: 0 auto; background: #f7f0e2; }
+  .grp + .grp { margin-top: 2.8rem; }
+  .grp .h3 { color: var(--ox); }
+  .sub { font-size: 0.92rem; margin: 0.2rem 0 0.8rem; }
+  .grp .menu li { border-bottom: 1px solid rgba(107,29,34,0.12); }
+  .acts { display: flex; gap: 0.9rem; flex-wrap: wrap; justify-content: center; }
+</style>

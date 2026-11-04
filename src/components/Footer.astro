@@ -1,0 +1,54 @@
+---
+import { business, hoursDisplay } from '../data/site';
+const year = new Date().getFullYear();
+---
+<footer class="site-footer woodgrain">
+  <div class="wrap">
+    <div class="f-top">
+      <div class="f-brand">
+        <img src="/logo-cream.png" alt="Kennesaw Barber Shop" width="376" height="372" loading="lazy" />
+        <p class="muted">A family tradition of barbering since 1920.</p>
+        <div class="social">
+          <a href={business.instagram} target="_blank" rel="noopener">Instagram</a>
+          <a href={business.facebook} target="_blank" rel="noopener">Facebook</a>
+        </div>
+      </div>
+      <div>
+        <p class="kicker plain">Visit</p>
+        <a href={business.mapsHref} target="_blank" rel="noopener">{business.street}<br />{business.city}, {business.region} {business.zip}</a>
+        <a href={business.mapsHref} target="_blank" rel="noopener" class="sub">Get directions</a>
+      </div>
+      <div>
+        <p class="kicker plain">Hours</p>
+        <p>Mon to Fri: 9 AM - 6 PM</p>
+        <p>Saturday: 8 AM - 3 PM</p>
+        <p>Sunday: Closed</p>
+      </div>
+      <div>
+        <p class="kicker plain">Contact</p>
+        <a href={business.phoneHref}>{business.phone}</a>
+        <a href={`mailto:${business.email}`} class="email">{business.email}</a>
+        <a href={business.bookHref} target="_blank" rel="noopener" class="sub">Book on Square</a>
+      </div>
+    </div>
+    <div class="f-bottom">
+      <p>© {year} {business.name} · Kennesaw, Georgia</p>
+      <p><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></p>
+    </div>
+  </div>
+</footer>
+<style>
+  .site-footer { border-top: 1px solid var(--line-2); padding: 4.5rem 0 calc(2rem + env(safe-area-inset-bottom)); }
+  .f-top { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1.2fr; gap: 2.5rem; }
+  .f-top > div { display: flex; flex-direction: column; gap: 0.45rem; font-size: 0.95rem; color: var(--cream-2); }
+  .f-top .kicker { margin-bottom: 0.4rem; }
+  .f-top a:hover { color: var(--brass); }
+  .f-brand img { width: 120px; margin-bottom: 0.6rem; }
+  .social { display: flex; gap: 1.2rem; font-size: 0.75rem; letter-spacing: 0.22em; text-transform: uppercase; margin-top: 0.4rem; }
+  .sub { font-size: 0.75rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--brass); margin-top: 0.3rem; }
+  .email { word-break: break-all; font-size: 0.88rem; }
+  .f-bottom { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; border-top: 1px solid var(--line); margin-top: 3.5rem; padding-top: 1.5rem; font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mute); }
+  .f-bottom a:hover { color: var(--brass); }
+  @media (max-width: 900px) { .f-top { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 520px) { .f-top { grid-template-columns: 1fr; } .site-footer { padding-bottom: calc(6rem + env(safe-area-inset-bottom)); } }
+</style>

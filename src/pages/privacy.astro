@@ -1,0 +1,20 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { business } from '../data/site';
+---
+<Layout title="Privacy Policy | Kennesaw Barber Shop">
+  <section class="page-hero"><div class="wrap"><p class="kicker">Legal</p><h1 class="h1">Privacy <span class="it">Policy.</span></h1></div></section>
+  <section class="section paper"><div class="wrap prose">
+    <p>Last updated November 4, 2026. This policy explains how {business.name} ("we") handles information on this website.</p>
+    <h2>What we collect</h2>
+    <p>This website does not have accounts or forms. We do not collect personal information through it. Our hosting provider may keep standard server logs such as IP address, browser type, and pages visited for security and performance.</p>
+    <h2>Booking</h2>
+    <p>Online booking is handled by Square on Square’s own pages. Information you give Square (such as your name, phone, and email) is governed by Square’s privacy policy. We use it only to manage your appointment and contact you about it.</p>
+    <h2>Calls and email</h2>
+    <p>If you call or email us, we use what you share only to respond and serve you. We do not sell your information.</p>
+    <h2>Third party links</h2>
+    <p>Links to Square, Google Maps, Facebook, and Instagram go to sites with their own policies.</p>
+    <h2>Contact</h2>
+    <p>{business.name}, {business.street}, {business.city}, Georgia {business.zip}. Phone <a href={business.phoneHref}>{business.phone}</a>. Email <a href={`mailto:${business.email}`}>{business.email}</a>.</p>
+  </div></section>
+</Layout>

@@ -1,0 +1,205 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { business, services, featured, reviews, hoursDisplay, barbers } from '../data/site';
+const feat = featured.map((n) => services.find((s) => s.name === n)!);
+---
+<Layout>
+  <section class="hero">
+    <div class="hero-bg" aria-hidden="true"><img src="/img/hero.jpg" alt="" fetchpriority="high" /></div>
+    <div class="wrap hero-inner">
+      <p class="kicker both" data-reveal>Est. 1920 · Kennesaw, Georgia</p>
+      <h1 class="hero-title" data-reveal style="--d:.1s">Four generations<br /><span class="it">of barbers.</span></h1>
+      <p class="hero-sub" data-reveal style="--d:.2s">
+        A family tradition of barbering excellence, coming together since 1920. Classic cuts, sharp beard work, and hot lather shaves on Jiles Road.
+      </p>
+      <div class="hero-actions" data-reveal style="--d:.3s">
+        <a href={business.bookHref} class="btn" target="_blank" rel="noopener">Book Your Chair</a>
+        <a href={business.phoneHref} class="btn btn-ghost">Call {business.phone}</a>
+      </div>
+    </div>
+    <div class="hero-strip">
+      <div class="wrap strip">
+        <span><em>Mon to Fri</em> 9 AM - 6 PM</span>
+        <span><em>Saturday</em> 8 AM - 3 PM</span>
+        <a href={business.mapsHref} target="_blank" rel="noopener"><em>Find us</em> {business.street}</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- STORY TEASE -->
+  <section class="section paper">
+    <div class="wrap story">
+      <div class="story-img" data-reveal>
+        <img src="/img/shop-1.jpg" alt="A barber at work in Kennesaw Barber Shop" loading="lazy" width="2200" height="1760" />
+      </div>
+      <div class="story-copy" data-reveal style="--d:.1s">
+        <p class="kicker">The Torres Family</p>
+        <h2 class="h2">Old school craft.<br /><span class="it">A new generation.</span></h2>
+        <p class="lede">
+          It started with Great Grandpa Torres, the community barber in Puerto Rico. It moved through Manhattan and Long Island. Today Andrew and his son Jonathan, the fourth generation, run the shop in Kennesaw.
+        </p>
+        <p class="lede" style="margin-top:1rem">Skilled barbers, a good chair, and the kind of shop where you feel at home.</p>
+        <a href="/about" class="btn btn-ghost" style="margin-top:2rem">Read Our Story</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES PREVIEW -->
+  <section class="section woodgrain">
+    <div class="wrap">
+      <div class="center">
+        <p class="kicker both">The Menu</p>
+        <h2 class="h2">Cuts, beards <span class="it">&amp; hot shaves.</span></h2>
+      </div>
+      <div class="card-frame menu-card" data-reveal>
+        <ul class="menu">
+          {feat.map((s) => (
+            <li><span class="n">{s.name}</span><span class="dots"></span><span class="p">{s.price}</span>{s.note && <span class="note">{s.note}</span>}</li>
+          ))}
+        </ul>
+        <div class="orn"><span>✦</span></div>
+        <div class="menu-actions">
+          <a href="/services" class="btn btn-ghost">Full Service Menu</a>
+          <a href={business.bookHref} class="btn" target="_blank" rel="noopener">Book Now</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BARBERS STRIP -->
+  <section class="section paper barbers-tease">
+    <div class="wrap">
+      <div class="head-row">
+        <div>
+          <p class="kicker">Meet the Barbers</p>
+          <h2 class="h2">Nine barbers. <span class="it">One standard.</span></h2>
+        </div>
+        <a href="/about#barbers" class="btn btn-ghost">Meet the Team</a>
+      </div>
+      <div class="faces">
+        {barbers.map((b, i) => (
+          <figure data-reveal style={`--d:${i * 0.04}s`}>
+            <img src={b.img} alt={`${b.name}, ${b.role}`} loading="lazy" width="540" height="600" />
+            <figcaption><strong>{b.name}</strong><span>{b.role}</span></figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- REVIEWS -->
+  <section class="section oxblood reviews">
+    <div class="wrap">
+      <div class="center">
+        <p class="kicker both" style="color:var(--brass-hi)">Word Around Town</p>
+        <h2 class="h2">They <span class="it" style="color:var(--brass-hi)">keep coming back.</span></h2>
+      </div>
+      <div class="rev-grid">
+        {reviews.map((r, i) => (
+          <blockquote class={i === 1 ? 'big' : ''} data-reveal style={`--d:${i * 0.06}s`}>
+            <span class="q" aria-hidden="true">“</span>
+            <p>{r.quote}</p>
+            <cite>{r.name}</cite>
+          </blockquote>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- VISIT -->
+  <section id="visit" class="section woodgrain">
+    <div class="wrap visit">
+      <div data-reveal>
+        <p class="kicker">Visit the Shop</p>
+        <h2 class="h2">Pull up <span class="it">a chair.</span></h2>
+        <p class="lede">Book online through Square, or give us a call and we will get you in.</p>
+        <div class="visit-facts">
+          <a href={business.mapsHref} target="_blank" rel="noopener"><em>Address</em>{business.street}<br />{business.city}, {business.region} {business.zip}</a>
+          <a href={business.phoneHref}><em>Phone</em>{business.phone}</a>
+          <a href={`mailto:${business.email}`}><em>Email</em><span class="email">{business.email}</span></a>
+        </div>
+        <div class="hero-actions">
+          <a href={business.bookHref} class="btn" target="_blank" rel="noopener">Book on Square</a>
+          <a href={business.mapsHref} class="btn btn-ghost" target="_blank" rel="noopener">Directions</a>
+        </div>
+      </div>
+      <div class="card-frame hours" data-reveal style="--d:.1s">
+        <p class="kicker plain">Shop Hours</p>
+        <ul class="menu">
+          {hoursDisplay.map((h) => (
+            <li data-day={h.idx}><span class="n">{h.day}</span><span class="dots"></span><span class="p">{h.label}</span></li>
+          ))}
+        </ul>
+        <img src="/img/shop-2.jpg" alt="Inside Kennesaw Barber Shop" loading="lazy" class="hours-img" />
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  const d = new Date().getDay();
+  document.querySelector(`.hours li[data-day="${d}"]`)?.classList.add('today');
+</script>
+
+<style>
+  .hero { position: relative; min-height: 100svh; display: flex; flex-direction: column; justify-content: center; overflow: hidden; padding-top: var(--header-h); }
+  .hero-bg { position: absolute; inset: 0; }
+  .hero-bg img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; filter: grayscale(1) sepia(0.3) contrast(1.08) brightness(0.72); transform: scale(1.04); animation: drift 18s ease-out forwards; }
+  .hero-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 40%, rgba(22,14,9,0.2), rgba(22,14,9,0.85) 75%), linear-gradient(180deg, rgba(22,14,9,0.3), rgba(22,14,9,0.95)); }
+  @keyframes drift { to { transform: scale(1); } }
+  .hero-inner { position: relative; text-align: center; padding-block: 4rem 7rem; }
+  .hero-title { font-family: var(--serif); font-weight: 500; font-size: clamp(3rem, 9vw, 7.2rem); line-height: 0.98; margin-top: 1.4rem; text-shadow: 0 4px 40px rgba(0,0,0,0.5); }
+  .hero-sub { max-width: 38rem; margin: 1.6rem auto 0; color: var(--cream-2); font-size: clamp(1.02rem, 1.5vw, 1.2rem); }
+  .hero-actions { display: flex; gap: 0.9rem; flex-wrap: wrap; justify-content: center; margin-top: 2.2rem; }
+  .visit .hero-actions { justify-content: flex-start; }
+  .hero-strip { position: absolute; left: 0; right: 0; bottom: 0; border-top: 1px solid var(--line-2); background: rgba(22,14,9,0.6); backdrop-filter: blur(6px); }
+  .strip { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding-block: 1.1rem; font-size: 0.85rem; letter-spacing: 0.06em; color: var(--cream-2); }
+  .strip em { font-style: normal; color: var(--brass); text-transform: uppercase; letter-spacing: 0.24em; font-size: 0.7rem; margin-right: 0.6rem; }
+
+  .story { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem, 6vw, 5rem); align-items: center; }
+  .story-img { position: relative; }
+  .story-img::before { content: ''; position: absolute; inset: -14px 14px 14px -14px; border: 1px solid rgba(107,29,34,0.4); }
+  .story-img img { position: relative; width: 100%; aspect-ratio: 5/4; object-fit: cover; filter: sepia(0.25) contrast(1.05); }
+
+  .menu-card { max-width: 820px; margin: 3rem auto 0; background: rgba(22,14,9,0.5); }
+  .menu-actions { display: flex; gap: 0.9rem; flex-wrap: wrap; justify-content: center; }
+
+  .head-row { display: flex; justify-content: space-between; align-items: end; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 3rem; }
+  .faces { display: grid; grid-template-columns: repeat(9, 1fr); gap: 0.6rem; }
+  .faces figure { position: relative; overflow: hidden; background: #d9ccb2; }
+  .faces img { width: 100%; aspect-ratio: 9/10; object-fit: cover; filter: sepia(0.2); transition: transform 0.6s var(--ease), filter 0.4s; }
+  .faces figure:hover img { transform: scale(1.05); filter: none; }
+  .faces figcaption { padding: 0.6rem 0.2rem 0; display: flex; flex-direction: column; }
+  .faces strong { font-family: var(--serif); font-weight: 500; font-size: 1.1rem; }
+  .faces span { font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ox); }
+
+  .reviews { background-image: radial-gradient(ellipse at 50% 0%, rgba(255,210,150,0.12), transparent 60%); }
+  .rev-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; margin-top: 3rem; }
+  .rev-grid blockquote { position: relative; border: 1px solid rgba(224,191,125,0.35); padding: 2rem 1.6rem 1.6rem; background: rgba(22,14,9,0.18); }
+  .rev-grid .big { grid-row: span 2; display: flex; flex-direction: column; justify-content: center; }
+  .rev-grid .big p { font-size: 1.35rem; }
+  .rev-grid .q { position: absolute; top: -0.2rem; left: 1rem; font-family: var(--serif); font-size: 4rem; line-height: 1; color: var(--brass-hi); }
+  .rev-grid p { font-family: var(--serif); font-size: 1.1rem; line-height: 1.5; }
+  .rev-grid cite { display: block; margin-top: 1rem; font-style: normal; font-size: 0.75rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--brass-hi); }
+
+  .visit { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(2rem, 6vw, 5rem); align-items: start; }
+  .visit-facts { display: grid; gap: 1.2rem; margin-top: 2rem; }
+  .visit-facts a { display: flex; flex-direction: column; font-family: var(--serif); font-size: 1.25rem; }
+  .visit-facts a:hover { color: var(--brass); }
+  .visit-facts em { font-family: var(--sans); font-style: normal; font-size: 0.7rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--brass); }
+  .visit-facts .email { font-size: 1rem; word-break: break-all; }
+  .hours { background: rgba(22,14,9,0.5); }
+  .hours .menu li { padding: 0.55rem 0; }
+  .hours :global(li.today) .n, .hours :global(li.today) .p { color: var(--brass-hi); }
+  .hours :global(li.today) .n::after { content: ' · today'; font-family: var(--sans); font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; }
+  .hours-img { margin-top: 1.5rem; width: 100%; aspect-ratio: 16/9; object-fit: cover; filter: sepia(0.3) brightness(0.85); }
+
+  @media (max-width: 1100px) { .faces { grid-template-columns: repeat(5, 1fr); } }
+  @media (max-width: 900px) {
+    .story, .visit { grid-template-columns: 1fr; }
+    .rev-grid { grid-template-columns: 1fr; }
+    .rev-grid .big { grid-row: auto; }
+    .faces { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 560px) { .strip { flex-direction: column; gap: 0.3rem; } .hero-inner { padding-bottom: 9rem; } }
+</style>

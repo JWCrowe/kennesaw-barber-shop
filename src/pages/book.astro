@@ -1,0 +1,47 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { business, hoursDisplay } from '../data/site';
+---
+<Layout title="Book an Appointment | Kennesaw Barber Shop" description="Book your haircut, beard trim, or hot lather shave at Kennesaw Barber Shop online through Square, or call (770) 424-6877.">
+  <section class="page-hero">
+    <div class="page-hero-bg" aria-hidden="true"><img src="/img/shop-1.jpg" alt="" /></div>
+    <div class="wrap center">
+      <p class="kicker both">Appointments</p>
+      <h1 class="h1">Reserve <span class="it">your chair.</span></h1>
+      <p class="lede">Pick your service, your barber, and your time on our Square booking page. Prefer to talk to a person? Give the shop a call.</p>
+      <div class="acts">
+        <a href={business.bookHref} class="btn" target="_blank" rel="noopener">Book Online with Square</a>
+        <a href={business.phoneHref} class="btn btn-ghost">Call {business.phone}</a>
+      </div>
+    </div>
+  </section>
+  <section class="section paper">
+    <div class="wrap grid">
+      <div class="card-frame" data-reveal>
+        <p class="kicker plain">How it works</p>
+        <ol class="steps">
+          <li><strong>Choose a service.</strong> Haircut, beard, shave, or the full chair.</li>
+          <li><strong>Pick your barber and time.</strong> Square shows open times live.</li>
+          <li><strong>Get confirmed.</strong> Square sends your booking details.</li>
+        </ol>
+        <a href={business.bookHref} class="btn btn-ox btn-block" target="_blank" rel="noopener">Open Square Booking</a>
+      </div>
+      <div class="card-frame" data-reveal style="--d:.1s">
+        <p class="kicker plain">Shop hours</p>
+        <ul class="menu">
+          {hoursDisplay.map((h) => <li><span class="n">{h.day}</span><span class="dots"></span><span class="p">{h.label}</span></li>)}
+        </ul>
+        <p class="muted addr"><a href={business.mapsHref} target="_blank" rel="noopener">{business.street}, {business.city}, {business.region} {business.zip}</a></p>
+      </div>
+    </div>
+  </section>
+</Layout>
+<style>
+  .acts { display: flex; gap: 0.9rem; flex-wrap: wrap; justify-content: center; margin-top: 2.2rem; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .steps { padding-left: 1.2rem; margin: 1rem 0 2rem; display: grid; gap: 0.9rem; color: #4b3c2c; }
+  .steps strong { font-family: var(--serif); font-weight: 500; color: var(--ink); font-size: 1.1rem; }
+  .menu li { padding: 0.5rem 0; }
+  .addr { margin-top: 1.2rem; }
+  @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+</style>

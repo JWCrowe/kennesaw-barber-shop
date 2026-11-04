@@ -1,0 +1,80 @@
+---
+import { business } from '../data/site';
+const links = [
+  { href: '/services', label: 'Services' },
+  { href: '/about', label: 'Our Story' },
+  { href: '/about#barbers', label: 'Barbers' },
+  { href: '/#visit', label: 'Visit' },
+];
+---
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="/" class="brand" aria-label="Kennesaw Barber Shop, home">
+      <img src="/logo-cream.png" alt="Kennesaw Barber Shop, est. 1920" width="376" height="372" />
+      <span class="brand-text"><strong>Kennesaw</strong><em>Barber Shop</em></span>
+    </a>
+    <nav class="nav-desktop" aria-label="Primary">
+      {links.map((l) => <a href={l.href}>{l.label}</a>)}
+    </nav>
+    <div class="header-cta">
+      <a href={business.phoneHref} class="header-phone">{business.phone}</a>
+      <a href={business.bookHref} class="btn btn-sm" target="_blank" rel="noopener">Book Now</a>
+      <button class="burger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav"><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+<div class="mobile-nav" id="mobile-nav" aria-hidden="true">
+  <nav aria-label="Mobile">
+    <a href="/">Home</a>
+    {links.map((l) => <a href={l.href}>{l.label}</a>)}
+  </nav>
+  <div class="mobile-foot">
+    <a href={business.bookHref} class="btn btn-block" target="_blank" rel="noopener">Book on Square</a>
+    <a href={business.phoneHref} class="btn btn-ghost btn-block">Call {business.phone}</a>
+    <p class="muted">{business.street}, {business.city}, {business.region} {business.zip}</p>
+  </div>
+</div>
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('.burger');
+  const menu = document.getElementById('mobile-nav');
+  const set = (open: boolean) => {
+    document.body.classList.toggle('nav-open', open);
+    btn?.setAttribute('aria-expanded', String(open));
+    menu?.setAttribute('aria-hidden', String(!open));
+  };
+  btn?.addEventListener('click', () => set(!document.body.classList.contains('nav-open')));
+  menu?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => set(false)));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') set(false); });
+</script>
+<style>
+  .site-header { position: fixed; inset: 0 0 auto 0; z-index: 60; height: var(--header-h); display: flex; align-items: center; border-bottom: 1px solid transparent; transition: background 0.4s, height 0.4s var(--ease), border-color 0.4s; background: linear-gradient(180deg, rgba(22,14,9,0.8), rgba(22,14,9,0)); }
+  .site-header.is-scrolled { height: 68px; background: rgba(22, 14, 9, 0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-color: var(--line-2); }
+  .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+  .brand { display: flex; align-items: center; gap: 0.8rem; }
+  .brand img { height: 54px; width: auto; transition: height 0.4s var(--ease); }
+  .is-scrolled .brand img { height: 44px; }
+  .brand-text { display: flex; flex-direction: column; line-height: 1; }
+  .brand-text strong { font-family: var(--serif); font-weight: 500; font-size: 1.25rem; letter-spacing: 0.04em; }
+  .brand-text em { font-style: normal; font-size: 0.62rem; letter-spacing: 0.36em; text-transform: uppercase; color: var(--brass); margin-top: 0.3rem; }
+  .nav-desktop { display: flex; gap: 2.1rem; }
+  .nav-desktop a { font-size: 0.76rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--cream-2); padding: 0.4rem 0; border-bottom: 1px solid transparent; transition: color 0.2s, border-color 0.2s; }
+  .nav-desktop a:hover { color: var(--cream); border-color: var(--brass); }
+  .header-cta { display: flex; align-items: center; gap: 1.2rem; }
+  .header-phone { font-size: 0.85rem; letter-spacing: 0.08em; color: var(--cream-2); }
+  .header-phone:hover { color: var(--brass); }
+  .burger { display: none; position: relative; width: 44px; height: 44px; background: transparent; border: 1px solid var(--line-2); cursor: pointer; }
+  .burger span { position: absolute; left: 11px; right: 11px; height: 1.5px; background: var(--cream); transition: transform 0.3s, top 0.3s; }
+  .burger span:first-child { top: 17px; } .burger span:last-child { top: 25px; }
+  :global(.nav-open) .burger span:first-child { top: 21px; transform: rotate(45deg); }
+  :global(.nav-open) .burger span:last-child { top: 21px; transform: rotate(-45deg); }
+  .mobile-nav { position: fixed; inset: 0; z-index: 55; background: var(--wood); display: flex; flex-direction: column; padding: calc(var(--header-h) + 2rem) var(--pad) calc(2rem + env(safe-area-inset-bottom)); clip-path: inset(0 0 100% 0); visibility: hidden; transition: clip-path 0.5s var(--ease), visibility 0.5s; }
+  :global(.nav-open) .mobile-nav { clip-path: inset(0); visibility: visible; }
+  :global(.nav-open) { overflow: hidden; }
+  .mobile-nav nav { display: flex; flex-direction: column; margin-bottom: auto; }
+  .mobile-nav nav a { font-family: var(--serif); font-size: clamp(2rem, 9vw, 3rem); border-bottom: 1px solid var(--line); padding: 0.5rem 0; }
+  .mobile-nav nav a:hover { color: var(--brass); }
+  .mobile-foot { display: grid; gap: 0.7rem; margin-top: 2rem; text-align: center; font-size: 0.85rem; }
+  @media (max-width: 1100px) { .header-phone { display: none; } .nav-desktop { gap: 1.4rem; } }
+  @media (max-width: 900px) { .nav-desktop { display: none; } .burger { display: block; } }
+  @media (max-width: 480px) { .header-cta .btn { display: none; } .brand img { height: 46px; } .brand-text strong { font-size: 1.1rem; } }
+</style>
