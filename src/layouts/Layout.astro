@@ -57,7 +57,7 @@ const jsonLd = {
     <Header />
     <main><slot /></main>
     <Footer />
-    <a href={business.bookHref} class="sticky-book" target="_blank" rel="noopener">Book a Chair</a>
+    {Astro.url.pathname.replace(/\/$/, "") !== "/book" && <a href={business.bookHref} class="sticky-book">Book a Chair</a>}
     <script>
       const els = document.querySelectorAll<HTMLElement>('[data-reveal]');
       if ('IntersectionObserver' in window) {

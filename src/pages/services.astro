@@ -1,6 +1,13 @@
 ---
+// Rendered on demand: once Square is connected and synced, the menu comes from Square (src/lib/catalog.ts).
+export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 import { business, services } from '../data/site';
+import { getPublicMenu } from '../lib/catalog';
+const menu = await getPublicMenu();
+const live = menu.mode === 'square' && menu.services.length > 0;
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
+Astro.response.headers.set('CDN-Cache-Control', 'public, s-maxage=60, stale-while-revalidate=600');
 const groups = [
   { key: 'cuts', title: 'Haircuts', sub: 'Clippers, shears, and a proper finish.' },
   { key: 'shaves', title: 'Shaves & Beards', sub: 'Hot lather and a steady straight razor.' },
@@ -19,7 +26,17 @@ const groups = [
   <section class="section paper">
     <div class="wrap">
       <div class="card-frame board">
-        {groups.map((g) => (
+        {live ? (
+          <div class="grp" data-reveal>
+            <h2 class="h3">Services</h2>
+            <p class="muted sub">Live from the shop's booking calendar.</p>
+            <ul class="menu">
+              {menu.services.map((s) => (
+                <li><a class="n" href={`/book?service=${encodeURIComponent(s.id)}`}>{s.name}</a><span class="dots"></span><span class="p">{s.price}</span><span class="note">{[s.time, s.desc].filter(Boolean).join(' · ')}</span></li>
+              ))}
+            </ul>
+          </div>
+        ) : groups.map((g) => (
           <div class="grp" data-reveal>
             <h2 class="h3">{g.title}</h2>
             <p class="muted sub">{g.sub}</p>
@@ -32,7 +49,7 @@ const groups = [
         ))}
         <div class="orn"><span>✦ EST. 1920 ✦</span></div>
         <div class="acts">
-          <a href={business.bookHref} class="btn btn-ox" target="_blank" rel="noopener">Book on Square</a>
+          <a href={business.bookHref} class="btn btn-ox">Book Online</a>
           <a href={business.phoneHref} class="btn btn-ghost">Call {business.phone}</a>
         </div>
       </div>

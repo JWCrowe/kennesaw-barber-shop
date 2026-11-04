@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 import Layout from '../layouts/Layout.astro';
 import { business, story, barbers } from '../data/site';
 ---
@@ -33,7 +34,7 @@ import { business, story, barbers } from '../data/site';
         <p class="kicker">Kennesaw Barber Shop</p>
         <h2 class="h2">Father and son, <span class="it">one shop.</span></h2>
         <p class="lede">Established in 2008 and purchased by Andrew in 2012, the shop brought the family’s New York and Georgia traditions together under one roof, with a fresh vision for the future of classic barbering.</p>
-        <a href={business.bookHref} class="btn" target="_blank" rel="noopener" style="margin-top:2rem">Book Your Chair</a>
+        <a href={business.bookHref} class="btn" style="margin-top:2rem">Book Your Chair</a>
       </div>
     </div>
   </section>

@@ -12,7 +12,10 @@ export const business = {
   phone: '(770) 424-6877',
   phoneHref: 'tel:7704246877',
   email: 'Jonathan.Torres@kennesawbarbershop.com',
-  bookHref: 'https://book.squareup.com/appointments/0huokl5xwqy0bl/location/6GE8HGYZE2KXZ/services',
+  // On-site booking lives at /book. The shop's own Square booking page stays as a last resort link only.
+  bookHref: '/book',
+  squareBookingPage: 'https://book.squareup.com/appointments/0huokl5xwqy0bl/location/6GE8HGYZE2KXZ/services',
+  squareLocationId: '6GE8HGYZE2KXZ',
   facebook: 'https://www.facebook.com/KennesawBarber/',
   instagram: 'https://www.instagram.com/kennesawbarbershop/',
   mapsHref:
@@ -78,4 +81,42 @@ export const story = [
   { era: 'Long Island', title: 'The Third Generation', text: 'Andrew and Peter grew up in the family shop, and Martha worked there too as a licensed cosmetologist. At 20, Andrew opened his own shop in East Quogue with his dad’s blessing and ran it for 18 years before moving the family to Georgia.' },
   { era: '1991', title: 'The Fourth Generation', text: 'Jonathan, the fourth generation of Torres barbers, trained at Roffler Barber College in Marietta, then went to work perfecting his craft and his own style.' },
   { era: '2012', title: 'Kennesaw Barber Shop', text: 'The shop opened on Jiles Road in 2008. Andrew bought it in 2012, bringing father and son together under one roof and blending the New York and Georgia traditions into one classic shop.' },
+];
+
+// ---------- Booking (Parker pattern) ----------
+// Once Square is connected, Square Appointments drives the bookable menu, prices, durations, and hours
+// (src/lib/catalog.ts). Everything below is the starter data used until then.
+
+// Hours fallback, used until Square is connected (or if no business hours are posted in Square).
+// Day index matches JS Date.getDay(): 0 = Sunday. Hours are 24h decimals.
+export const fallbackHours: Record<number, { open: number; close: number } | null> = {
+  0: null,
+  1: { open: 9, close: 18 },
+  2: { open: 9, close: 18 },
+  3: { open: 9, close: 18 },
+  4: { open: 9, close: 18 },
+  5: { open: 9, close: 18 },
+  6: { open: 8, close: 15 },
+};
+
+// Local (request) mode only: how many clients can be booked into the same time slot before it shows as taken.
+// The shop runs several chairs at once. Override with BOOKING_CHAIRS in Vercel env.
+export const defaultChairs = 3;
+
+// Starter bookable menu, seeded into Neon. Durations are placeholders until Square sync brings the real ones.
+// priceLabel shows the range from the menu board; price_cents holds the low end.
+export const seedServices: { id: string; name: string; desc: string; duration: number; cents: number; priceLabel: string }[] = [
+  { id: 'cut-style', name: 'Haircut & Style', desc: 'The house cut, finished and styled.', duration: 30, cents: 3500, priceLabel: '$35-40' },
+  { id: 'cut-beard', name: 'Haircut & Beard', desc: 'Cut plus a beard shaped to match.', duration: 45, cents: 5000, priceLabel: '$50-55' },
+  { id: 'cut-style-shave', name: 'Haircut, Style & Shave', desc: 'The full chair. Cut, style, and a hot lather shave.', duration: 60, cents: 7000, priceLabel: '$70-75' },
+  { id: 'boys', name: 'Boys Haircut', desc: '', duration: 30, cents: 3000, priceLabel: '$30-35' },
+  { id: 'buzz', name: 'Buzz Cut', desc: 'Same price for everyone.', duration: 30, cents: 2600, priceLabel: '$26' },
+  { id: 'buzz-beard', name: 'Buzz Cut & Beard Trim', desc: '', duration: 30, cents: 3500, priceLabel: '$35-40' },
+  { id: 'military', name: 'Military / Law Haircut', desc: 'Thank you for your service.', duration: 30, cents: 2500, priceLabel: '$25' },
+  { id: 'military-beard', name: 'Military / Law Cut & Beard', desc: '', duration: 45, cents: 3500, priceLabel: '$35' },
+  { id: 'hot-shave', name: 'Hot Lather Facial Shave', desc: 'Hot towel, warm lather, straight razor.', duration: 30, cents: 4000, priceLabel: '$40-45' },
+  { id: 'head-shave', name: 'Head Shave', desc: '', duration: 30, cents: 3000, priceLabel: '$30-35' },
+  { id: 'beard-trim', name: 'Beard Trim', desc: '', duration: 30, cents: 2500, priceLabel: '$25-30' },
+  { id: 'shave-down', name: 'Shave Down', desc: '', duration: 30, cents: 2700, priceLabel: '$27' },
+  { id: 'hair-wash', name: 'Hair Wash', desc: '', duration: 15, cents: 1100, priceLabel: '$11' },
 ];

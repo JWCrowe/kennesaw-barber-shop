@@ -1,47 +1,389 @@
 ---
+// On-site booking (Parker pattern). Rendered on demand: the menu, prices, durations, hours, and barbers
+// come from Square once connected (src/lib/catalog.ts), otherwise from the starter data in site.ts.
+export const prerender = false;
 import Layout from '../layouts/Layout.astro';
-import { business, hoursDisplay } from '../data/site';
+import { business } from '../data/site';
+import { getPublicMenu, hoursRows } from '../lib/catalog';
+import { openStatus } from '../lib/open-status';
+
+const menu = await getPublicMenu();
+const hours = hoursRows(menu.hours);
+const todayDow = openStatus(menu.hours).dow;
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
+Astro.response.headers.set('CDN-Cache-Control', 'public, s-maxage=60, stale-while-revalidate=600');
+const steps = ['Service', 'Date', 'Time', 'Details', 'Done'];
+const payload = JSON.stringify({ mode: menu.mode, services: menu.services, barbers: menu.barbers }).replace(/</g, '\\u003c');
 ---
-<Layout title="Book an Appointment | Kennesaw Barber Shop" description="Book your haircut, beard trim, or hot lather shave at Kennesaw Barber Shop online through Square, or call (770) 424-6877.">
-  <section class="page-hero">
+<Layout title="Book an Appointment | Kennesaw Barber Shop" description="Book a haircut, beard trim, or hot lather shave at Kennesaw Barber Shop on Jiles Rd. Pick a service, a day, and a time in under a minute.">
+  <section class="page-hero book-hero">
     <div class="page-hero-bg" aria-hidden="true"><img src="/img/shop-1.jpg" alt="" /></div>
     <div class="wrap center">
       <p class="kicker both">Appointments</p>
       <h1 class="h1">Reserve <span class="it">your chair.</span></h1>
-      <p class="lede">Pick your service, your barber, and your time on our Square booking page. Prefer to talk to a person? Give the shop a call.</p>
-      <div class="acts">
-        <a href={business.bookHref} class="btn" target="_blank" rel="noopener">Book Online with Square</a>
-        <a href={business.phoneHref} class="btn btn-ghost">Call {business.phone}</a>
-      </div>
+      <p class="lede">Pick a service, choose a day and time, and you are on the books. Under a minute.</p>
     </div>
   </section>
-  <section class="section paper">
-    <div class="wrap grid">
-      <div class="card-frame" data-reveal>
-        <p class="kicker plain">How it works</p>
-        <ol class="steps">
-          <li><strong>Choose a service.</strong> Haircut, beard, shave, or the full chair.</li>
-          <li><strong>Pick your barber and time.</strong> Square shows open times live.</li>
-          <li><strong>Get confirmed.</strong> Square sends your booking details.</li>
+
+  <section class="section paper book-sec">
+    <div class="wrap book-grid">
+      <div id="booking-app" class="card-frame app">
+        <ol id="progress" class="prog" aria-label="Booking progress">
+          {steps.map((s, i) => (
+            <li data-step={i + 1}><button type="button" class="pstep" data-go={i + 1} disabled><b>{String(i + 1).padStart(2, '0')}</b><span>{s}</span></button></li>
+          ))}
         </ol>
-        <a href={business.bookHref} class="btn btn-ox btn-block" target="_blank" rel="noopener">Open Square Booking</a>
+
+        <div id="step-1" class="step">
+          <h2 class="h3">Choose a <span class="it">service</span></h2>
+          {menu.mode !== 'square' && <p class="sub">Online booking is in request mode: pick a time and the shop confirms it with you.</p>}
+          <div id="services" class="svc-list" role="list"></div>
+          <script is:inline type="application/json" id="menu-data" set:html={payload}></script>
+        </div>
+
+        <div id="step-2" class="step" hidden>
+          <h2 class="h3">Pick a <span class="it">day</span></h2>
+          <label class="field barber-pick" id="barber-wrap" hidden>
+            <span>Barber</span>
+            <select id="barber"><option value="">Any available barber</option></select>
+          </label>
+          <div id="dates" class="date-grid"></div>
+        </div>
+
+        <div id="step-3" class="step" hidden>
+          <h2 class="h3">Open <span class="it">times</span></h2>
+          <p id="time-context" class="sub"></p>
+          <div id="times"></div>
+        </div>
+
+        <div id="step-4" class="step" hidden>
+          <h2 class="h3">Your <span class="it">details</span></h2>
+          <form id="details-form" class="form" novalidate>
+            <label class="field"><span>Full name</span><input type="text" id="name" autocomplete="name" required placeholder="First and last" /></label>
+            <label class="field"><span>Phone number</span><input type="tel" id="phone" autocomplete="tel" inputmode="tel" required placeholder="(770) 555-0123" /></label>
+            <label class="field"><span>Email <em>optional, for your confirmation</em></span><input type="email" id="email" autocomplete="email" placeholder="you@email.com" /></label>
+            <label class="field"><span>Notes for your barber <em>optional</em></span><textarea id="notes" rows="3" placeholder="Fade height, beard shape, anything we should know"></textarea></label>
+            <label class="hp" aria-hidden="true">Website <input type="text" id="website" tabindex="-1" autocomplete="off" /></label>
+            <p id="form-error" class="form-error" role="alert" hidden></p>
+            <button type="submit" id="submit-btn" class="btn btn-ox btn-block">{menu.mode === 'square' ? 'Book This Time' : 'Request This Time'}</button>
+            <p class="fine">By booking you agree to our <a href="/terms">Terms</a>. We use your details only to handle your appointment. See our <a href="/privacy">Privacy Policy</a>.</p>
+          </form>
+        </div>
+
+        <div id="step-5" class="step done" hidden>
+          <p><span id="status-pill" class="pill">Pending</span></p>
+          <h2 id="done-title" class="h3">Request <span class="it">received.</span></h2>
+          <p id="done-sub" class="sub"></p>
+          <dl id="confirmation" class="stub"></dl>
+          <div class="acts">
+            <a href={business.phoneHref} class="btn btn-ox">Call {business.phone}</a>
+            <a href={business.mapsHref} class="btn btn-ghost" target="_blank" rel="noopener">Directions</a>
+          </div>
+          <a href="/" class="back-home">Back to home</a>
+        </div>
+
+        <div class="foot"><button id="back-btn" type="button" class="btn btn-ghost btn-sm" hidden>Back</button></div>
       </div>
-      <div class="card-frame" data-reveal style="--d:.1s">
-        <p class="kicker plain">Shop hours</p>
-        <ul class="menu">
-          {hoursDisplay.map((h) => <li><span class="n">{h.day}</span><span class="dots"></span><span class="p">{h.label}</span></li>)}
+
+      <aside class="card-frame ticket" aria-live="polite">
+        <p class="kicker plain">Your ticket</p>
+        <dl class="lines">
+          <div><dt>Service</dt><dd id="sum-service">Not selected</dd></div>
+          <div><dt>Barber</dt><dd id="sum-barber">Any available</dd></div>
+          <div><dt>Day</dt><dd id="sum-date">Not selected</dd></div>
+          <div><dt>Time</dt><dd id="sum-time">Not selected</dd></div>
+          <div><dt>Length</dt><dd id="sum-duration">--</dd></div>
+          <div class="total"><dt>Price</dt><dd id="sum-price">--</dd></div>
+        </dl>
+        <p class="kicker plain hrs-k">Shop hours</p>
+        <ul class="menu hrs">
+          {hours.map((h) => <li class={h.idx === todayDow ? 'today' : ''}><span class="n">{h.day}</span><span class="dots"></span><span class="p">{h.label}</span></li>)}
         </ul>
-        <p class="muted addr"><a href={business.mapsHref} target="_blank" rel="noopener">{business.street}, {business.city}, {business.region} {business.zip}</a></p>
-      </div>
+        <p class="muted addr"><a href={business.mapsHref} target="_blank" rel="noopener">{business.street}, {business.city}, {business.region} {business.zip}</a><br /><a href={business.phoneHref}>{business.phone}</a></p>
+      </aside>
     </div>
   </section>
 </Layout>
+
+<script>
+  import { business } from '../data/site';
+  import type { PublicService as Service, PublicBarber as Barber } from '../lib/catalog';
+
+  type Slot = { time: string; label: string; startsAt: string };
+  const TZ = 'America/New_York';
+  const esc = (s: string) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const todayKey = () => new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date());
+  const fmtKey = (k: string, o: Intl.DateTimeFormatOptions) => new Date(`${k}T12:00:00Z`).toLocaleDateString('en-US', { timeZone: 'UTC', ...o });
+  const longDate = (k: string) => fmtKey(k, { weekday: 'long', month: 'long', day: 'numeric' });
+  const fmtDur = (m: number) => (m < 60 ? `${m} min` : m % 60 ? `${Math.floor(m / 60)} hr ${m % 60} min` : `${m / 60} hr`);
+
+  async function getJSON(url: string) {
+    const r = await fetch(url, { headers: { accept: 'application/json' } });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || 'Could not load times right now.');
+    return d;
+  }
+
+  function init() {
+    const app = document.getElementById('booking-app');
+    if (!app) return;
+    let menu: { mode: string; services: Service[]; barbers: Barber[] } = { mode: 'offline', services: [], barbers: [] };
+    try { menu = JSON.parse(document.getElementById('menu-data')?.textContent || '{}'); } catch {}
+    const services = menu.services || [];
+    const barbers = menu.barbers || [];
+    const squareMode = menu.mode === 'square';
+    const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
+    const state = { step: 1, maxStep: 1, service: null as Service | null, barber: '' , date: null as string | null, slot: null as Slot | null };
+    const loading = (m: string) => `<p class="sub loading"><span class="spin" aria-hidden="true"></span>${esc(m)}</p>`;
+    const fallback = (m: string) => `<div class="fallback"><p class="sub">${esc(m)}</p><a class="btn btn-ox btn-sm" href="${business.phoneHref}">Call ${esc(business.phone)}</a></div>`;
+    const barberName = () => barbers.find((b) => b.id === state.barber)?.name || '';
+    const barberQ = () => (squareMode && state.barber ? `&barber=${encodeURIComponent(state.barber)}` : '');
+    let token = 0;
+
+    // Barber picker: Square team members when connected (narrows availability), shop roster otherwise (a preference note).
+    const sel = $<HTMLSelectElement>('barber');
+    if (barbers.length) {
+      barbers.forEach((b) => sel.add(new Option(b.name, b.id)));
+      $('barber-wrap').hidden = false;
+      sel.addEventListener('change', () => { state.barber = sel.value; state.date = null; state.slot = null; state.maxStep = 2; updateSummary(); renderDates(); });
+    }
+
+    function updateSummary() {
+      $('sum-service').textContent = state.service ? state.service.name : 'Not selected';
+      $('sum-barber').textContent = barberName() || 'Any available';
+      $('sum-date').textContent = state.date ? fmtKey(state.date, { weekday: 'short', month: 'short', day: 'numeric' }) : 'Not selected';
+      $('sum-time').textContent = state.slot ? state.slot.label : 'Not selected';
+      $('sum-duration').textContent = state.service ? fmtDur(state.service.duration) : '--';
+      $('sum-price').textContent = state.service ? state.service.price : '--';
+    }
+
+    function renderServices() {
+      const c = $('services');
+      if (!services.length) { c.innerHTML = fallback('The online menu is updating right now. Call the shop and we will get you on the books.'); return; }
+      c.innerHTML = services.map((s, i) => `
+        <button type="button" class="opt svc${state.service?.id === s.id ? ' is-sel' : ''}" data-id="${esc(s.id)}" role="listitem">
+          <span class="num">${pad(i + 1)}</span>
+          <span class="body"><span class="nm">${esc(s.name)}</span>${s.desc ? `<span class="ds">${esc(s.desc)}</span>` : ''}</span>
+          <span class="meta"><span class="pr">${esc(s.price)}</span><span class="tm">${esc(s.time)}</span></span>
+        </button>`).join('');
+      c.querySelectorAll<HTMLButtonElement>('.svc').forEach((b) => b.addEventListener('click', () => {
+        const svc = services.find((s) => s.id === b.dataset.id)!;
+        if (state.service?.id !== svc.id) { state.date = null; state.slot = null; state.maxStep = 2; }
+        state.service = svc;
+        go(2);
+      }));
+    }
+
+    async function renderDates() {
+      const c = $('dates');
+      if (!state.service) return;
+      const my = ++token;
+      c.innerHTML = loading('Checking the book...');
+      try {
+        const d = await getJSON(`/api/availability?start=${todayKey()}&days=21&service=${encodeURIComponent(state.service.id)}${barberQ()}`);
+        if (my !== token) return;
+        const list = (d.days as { date: string; count: number }[]).filter((x) => x.count > 0).slice(0, 14);
+        const today = todayKey();
+        c.innerHTML = list.length
+          ? list.map((x) => `<button type="button" class="opt day${state.date === x.date ? ' is-sel' : ''}" data-date="${x.date}">
+              <span class="wk">${x.date === today ? 'Today' : fmtKey(x.date, { weekday: 'short' })}</span>
+              <span class="dn">${Number(x.date.slice(8))}</span>
+              <span class="mo">${fmtKey(x.date, { month: 'short' })}</span>
+              <span class="ct">${x.count} open</span></button>`).join('')
+          : fallback(state.barber ? `${barberName()} has no open times online in the next few weeks. Try Any available barber, or call.` : 'No open times online in the next few weeks. Call and we will try to fit you in.');
+        c.querySelectorAll<HTMLButtonElement>('.day').forEach((b) => b.addEventListener('click', () => {
+          if (state.date !== b.dataset.date) { state.slot = null; state.maxStep = 3; }
+          state.date = b.dataset.date!;
+          go(3);
+        }));
+      } catch (e) { if (my === token) c.innerHTML = fallback((e as Error).message); }
+    }
+
+    async function renderTimes(note = '') {
+      const c = $('times');
+      if (!state.date || !state.service) return;
+      $('time-context').textContent = `${longDate(state.date)} · ${state.service.name} · ${fmtDur(state.service.duration)}${barberName() ? ' · ' + barberName() : ''}`;
+      const my = ++token;
+      c.innerHTML = loading('Loading open times...');
+      try {
+        const d = await getJSON(`/api/availability?date=${state.date}&service=${encodeURIComponent(state.service.id)}${barberQ()}`);
+        if (my !== token) return;
+        const slots = d.slots as Slot[];
+        const h = (s: Slot) => Number(s.time.slice(0, 2));
+        const groups = [
+          { label: 'Morning', items: slots.filter((s) => h(s) < 12) },
+          { label: 'Afternoon', items: slots.filter((s) => h(s) >= 12 && h(s) < 17) },
+          { label: 'Evening', items: slots.filter((s) => h(s) >= 17) },
+        ].filter((g) => g.items.length);
+        c.innerHTML = (note ? `<p class="form-error" role="alert">${esc(note)}</p>` : '') +
+          (groups.length
+            ? groups.map((g) => `<div class="tgroup"><p class="tlabel">${g.label}</p><div class="tgrid">${g.items.map((s) => `<button type="button" class="opt time${state.slot?.startsAt === s.startsAt ? ' is-sel' : ''}" data-at="${s.startsAt}">${esc(s.label)}</button>`).join('')}</div></div>`).join('')
+            : `<p class="sub">No open times left on this day. Pick another day.</p>`);
+        c.querySelectorAll<HTMLButtonElement>('.time').forEach((b) => b.addEventListener('click', () => {
+          state.slot = slots.find((s) => s.startsAt === b.dataset.at) || null;
+          go(4);
+        }));
+      } catch (e) { if (my === token) c.innerHTML = fallback((e as Error).message); }
+    }
+
+    function showStep(n: number) {
+      app!.querySelectorAll<HTMLElement>('.step').forEach((el) => (el.hidden = true));
+      $(`step-${n}`).hidden = false;
+      document.querySelectorAll<HTMLLIElement>('#progress li').forEach((li) => {
+        const s = Number(li.dataset.step);
+        li.classList.toggle('is-cur', s === n);
+        li.classList.toggle('is-done', s < n);
+        const btn = li.querySelector('button')!;
+        btn.disabled = n === 5 || s > state.maxStep || s === n || s === 5;
+      });
+      $('back-btn').hidden = !(n > 1 && n < 5);
+      updateSummary();
+    }
+
+    function go(n: number, note = '') {
+      state.step = n;
+      state.maxStep = Math.max(state.maxStep, n);
+      if (n === 1) renderServices();
+      if (n === 2) renderDates();
+      if (n === 3) renderTimes(note);
+      showStep(n);
+      const top = app!.getBoundingClientRect().top + window.scrollY - 100;
+      if (window.scrollY > top) window.scrollTo({ top, behavior: 'smooth' });
+    }
+
+    $('back-btn').addEventListener('click', () => { if (state.step > 1) go(state.step - 1); });
+    document.querySelectorAll<HTMLButtonElement>('.pstep').forEach((b) => b.addEventListener('click', () => { const n = Number(b.dataset.go); if (n <= state.maxStep) go(n); }));
+
+    let sending = false;
+    $<HTMLFormElement>('details-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (sending) return;
+      const name = $<HTMLInputElement>('name').value.trim();
+      const phone = $<HTMLInputElement>('phone').value.trim();
+      const email = $<HTMLInputElement>('email').value.trim();
+      const notes = $<HTMLTextAreaElement>('notes').value.trim();
+      const website = $<HTMLInputElement>('website').value;
+      const err = $('form-error');
+      const digits = phone.replace(/\D/g, '').replace(/^1(?=\d{10}$)/, '');
+      let msg = '';
+      if (!name) msg = 'Add your name so the shop knows who is coming in.';
+      else if (digits.length !== 10) msg = 'Add a 10 digit phone number the shop can reach you at.';
+      else if (email && !/^\S+@\S+\.\S+$/.test(email)) msg = 'That email does not look right.';
+      if (msg) { err.textContent = msg; err.hidden = false; return; }
+      err.hidden = true;
+      const svc = state.service!;
+      const slot = state.slot!;
+      const btn = $<HTMLButtonElement>('submit-btn');
+      const label = btn.textContent;
+      sending = true; btn.disabled = true; btn.textContent = 'Sending...';
+      let res: Response | null = null;
+      let data: any = {};
+      try {
+        res = await fetch('/api/bookings', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ service: svc.id, date: state.date, time: slot.time, name, phone, email, notes, website, barber: state.barber, barberName: barberName() }),
+        });
+        data = await res.json().catch(() => ({}));
+      } catch { data = { error: 'Could not reach the booking system.' }; }
+      sending = false; btn.disabled = false; btn.textContent = label;
+
+      if (res?.status === 409) { state.slot = null; go(3, data.error || 'That time was just taken. Pick another one.'); return; }
+      if (!res?.ok || !data.ok) {
+        err.innerHTML = `${esc(data.error || 'Something went wrong.')} You can also call <a href="${business.phoneHref}">${esc(business.phone)}</a>.`;
+        err.hidden = false;
+        return;
+      }
+      const confirmed = data.status === 'confirmed';
+      const pill = $('status-pill');
+      pill.textContent = confirmed ? 'Confirmed' : 'Pending confirmation';
+      pill.classList.toggle('ok', confirmed);
+      $('done-title').innerHTML = confirmed ? `You're <span class="it">booked.</span>` : `Request <span class="it">received.</span>`;
+      $('done-sub').textContent = confirmed
+        ? `You're on the book.${email ? ' A confirmation is on its way to your email.' : ''} Need to change it? Call the shop.`
+        : `The shop has your request and will confirm it${email ? ' by email' : ''}. Need it sooner? Give us a call.`;
+      const when = `${longDate(state.date!)} at ${slot.label}`;
+      const row = (k: string, v: string) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`;
+      $('confirmation').innerHTML = row('Status', confirmed ? 'Confirmed' : 'Waiting on the shop') + row('Service', svc.name) + (barberName() ? row('Barber', barberName()) : '') + row('When', when) + row('Length', fmtDur(svc.duration)) + row('Name', name) + row('Phone', phone) + row('Price', svc.price);
+      go(5);
+    });
+
+    // Deep link: /book?service=cut-style
+    const pre = new URLSearchParams(location.search).get('service');
+    const found = services.find((s) => s.id === pre);
+    if (found) { state.service = found; go(2); } else { renderServices(); showStep(1); }
+  }
+  init();
+</script>
+
 <style>
-  .acts { display: flex; gap: 0.9rem; flex-wrap: wrap; justify-content: center; margin-top: 2.2rem; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-  .steps { padding-left: 1.2rem; margin: 1rem 0 2rem; display: grid; gap: 0.9rem; color: #4b3c2c; }
-  .steps strong { font-family: var(--serif); font-weight: 500; color: var(--ink); font-size: 1.1rem; }
-  .menu li { padding: 0.5rem 0; }
-  .addr { margin-top: 1.2rem; }
-  @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+  .book-hero { padding-bottom: clamp(2.5rem, 5vw, 3.5rem); }
+  .book-sec { padding-top: clamp(2.5rem, 5vw, 4rem); }
+  .book-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 2rem; align-items: start; }
+  .app { background: #f7f0e2; min-height: 420px; }
+  .prog { list-style: none; display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.4rem; margin-bottom: 2rem; border-bottom: 1px solid rgba(107,29,34,0.18); padding-bottom: 1rem; }
+  .pstep { width: 100%; background: none; border: 0; font: inherit; color: #8c7b64; display: grid; gap: 0.1rem; text-align: left; cursor: pointer; padding: 0; }
+  .pstep:disabled { cursor: default; }
+  .pstep b { font-family: var(--serif); font-weight: 500; font-size: 1.1rem; }
+  .pstep span { font-size: 0.66rem; letter-spacing: 0.22em; text-transform: uppercase; }
+  .prog li.is-done .pstep { color: var(--ink); }
+  .prog li.is-cur .pstep { color: var(--ox); }
+  .step .h3 { margin-bottom: 0.6rem; }
+  .sub { color: #5d4d39; margin-bottom: 1.2rem; }
+  .svc-list { display: grid; gap: 0.5rem; }
+  .app :global(.opt) { font: inherit; cursor: pointer; background: #fffaf0; border: 1px solid rgba(107,29,34,0.2); color: var(--ink); transition: border-color 0.2s, background 0.2s, transform 0.2s var(--ease); }
+  .app :global(.opt:hover) { border-color: var(--ox); transform: translateY(-1px); }
+  .app :global(.opt.is-sel) { border-color: var(--ox); background: #f3e3d3; box-shadow: inset 3px 0 0 var(--ox); }
+  .app :global(.svc) { display: grid; grid-template-columns: auto 1fr auto; gap: 1rem; align-items: center; text-align: left; padding: 0.95rem 1.1rem; }
+  .app :global(.svc .num) { font-family: var(--serif); color: var(--ox); font-size: 0.95rem; }
+  .app :global(.svc .nm) { display: block; font-family: var(--serif); font-size: 1.15rem; }
+  .app :global(.svc .ds) { display: block; font-size: 0.88rem; color: #75644e; }
+  .app :global(.svc .meta) { display: grid; text-align: right; }
+  .app :global(.svc .pr) { font-family: var(--serif); color: var(--ox); font-size: 1.1rem; white-space: nowrap; }
+  .app :global(.svc .tm) { font-size: 0.78rem; color: #8c7b64; white-space: nowrap; }
+  .barber-pick { max-width: 320px; margin-bottom: 1.2rem; }
+  .date-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 0.5rem; }
+  .app :global(.day) { display: grid; justify-items: center; padding: 0.8rem 0.4rem; }
+  .app :global(.day .wk), .app :global(.day .mo) { font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: #75644e; }
+  .app :global(.day .dn) { font-family: var(--serif); font-size: 1.8rem; line-height: 1.1; }
+  .app :global(.day .ct) { font-size: 0.72rem; color: var(--ox); margin-top: 0.2rem; }
+  .app :global(.tgroup + .tgroup) { margin-top: 1.2rem; }
+  .app :global(.tlabel) { font-size: 0.7rem; letter-spacing: 0.26em; text-transform: uppercase; color: var(--ox); margin-bottom: 0.5rem; }
+  .tgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.45rem; }
+  .app :global(.time) { padding: 0.75rem 0.4rem; font-size: 0.95rem; }
+  .form { display: grid; gap: 1rem; }
+  .field { display: grid; gap: 0.35rem; }
+  .field > span { font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: #5d4d39; }
+  .field em { text-transform: none; letter-spacing: 0; font-style: italic; color: #8c7b64; }
+  .field input, .field textarea, .field select { font: inherit; color: var(--ink); background: #fffaf0; border: 1px solid rgba(107,29,34,0.28); padding: 0.8rem 0.9rem; border-radius: 0; width: 100%; }
+  .field input:focus, .field textarea:focus, .field select:focus { outline: 2px solid var(--ox); outline-offset: 1px; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .form-error { color: var(--ox); background: #f6dcd6; border-left: 3px solid var(--ox); padding: 0.7rem 0.9rem; margin-bottom: 1rem; }
+  .form-error a { text-decoration: underline; }
+  .fine { font-size: 0.82rem; color: #75644e; }
+  .fine a { text-decoration: underline; }
+  .pill { display: inline-block; font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase; padding: 0.35rem 0.8rem; border: 1px solid var(--ox); color: var(--ox); margin-bottom: 0.8rem; }
+  .pill.ok { background: var(--ox); color: var(--cream); }
+  .app :global(.stub), .lines { display: grid; gap: 0; margin: 1rem 0 1.5rem; }
+  .app :global(.stub div), .lines div { display: flex; justify-content: space-between; gap: 1rem; padding: 0.55rem 0; border-bottom: 1px dotted rgba(107,29,34,0.3); }
+  .app :global(.stub dt), .lines dt { font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase; color: #75644e; }
+  .app :global(.stub dd), .lines dd { font-family: var(--serif); text-align: right; }
+  .lines .total dd { color: var(--ox); font-size: 1.3rem; }
+  .acts { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+  .back-home { display: inline-block; margin-top: 1.2rem; text-decoration: underline; color: #5d4d39; }
+  .foot { margin-top: 1.5rem; }
+  .ticket { position: sticky; top: calc(var(--header-h) + 1rem); background: #f7f0e2; }
+  .hrs-k { margin-top: 0.5rem; }
+  .hrs li { padding: 0.35rem 0; }
+  .hrs .n, .hrs .p { font-size: 1rem; }
+  .hrs li.today .n { color: var(--ox); font-weight: 600; }
+  .addr { margin-top: 1rem; font-size: 0.92rem; }
+  .addr a { text-decoration: underline; }
+  .fallback { display: grid; gap: 0.8rem; justify-items: start; }
+  .loading { display: flex; align-items: center; gap: 0.6rem; }
+  .spin { width: 16px; height: 16px; border: 2px solid rgba(107,29,34,0.25); border-top-color: var(--ox); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (max-width: 900px) { .book-grid { grid-template-columns: 1fr; } .ticket { position: static; } }
+  @media (max-width: 560px) { .pstep span { display: none; } .app :global(.svc) { grid-template-columns: 1fr auto; } .app :global(.svc .num) { display: none; } }
 </style>

@@ -18,7 +18,7 @@ const links = [
     </nav>
     <div class="header-cta">
       <a href={business.phoneHref} class="header-phone">{business.phone}</a>
-      <a href={business.bookHref} class="btn btn-sm" target="_blank" rel="noopener">Book Now</a>
+      <a href={business.bookHref} class="btn btn-sm">Book Now</a>
       <button class="burger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav"><span></span><span></span></button>
     </div>
   </div>
@@ -29,7 +29,7 @@ const links = [
     {links.map((l) => <a href={l.href}>{l.label}</a>)}
   </nav>
   <div class="mobile-foot">
-    <a href={business.bookHref} class="btn btn-block" target="_blank" rel="noopener">Book on Square</a>
+    <a href={business.bookHref} class="btn btn-block">Book Online</a>
     <a href={business.phoneHref} class="btn btn-ghost btn-block">Call {business.phone}</a>
     <p class="muted">{business.street}, {business.city}, {business.region} {business.zip}</p>
   </div>

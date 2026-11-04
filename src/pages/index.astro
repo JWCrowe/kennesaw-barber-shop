@@ -1,6 +1,13 @@
 ---
+// Rendered on demand so the posted hours follow Square once it is connected. CDN keeps it for a minute.
+export const prerender = false;
 import Layout from '../layouts/Layout.astro';
-import { business, services, featured, reviews, hoursDisplay, barbers } from '../data/site';
+import { business, services, featured, reviews, barbers } from '../data/site';
+import { getPublicMenu, hoursRows } from '../lib/catalog';
+const menu = await getPublicMenu();
+const hoursDisplay = hoursRows(menu.hours);
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
+Astro.response.headers.set('CDN-Cache-Control', 'public, s-maxage=60, stale-while-revalidate=600');
 const feat = featured.map((n) => services.find((s) => s.name === n)!);
 ---
 <Layout>
@@ -13,7 +20,7 @@ const feat = featured.map((n) => services.find((s) => s.name === n)!);
         A family tradition of barbering excellence, coming together since 1920. Classic cuts, sharp beard work, and hot lather shaves on Jiles Road.
       </p>
       <div class="hero-actions" data-reveal style="--d:.3s">
-        <a href={business.bookHref} class="btn" target="_blank" rel="noopener">Book Your Chair</a>
+        <a href={business.bookHref} class="btn">Book Your Chair</a>
         <a href={business.phoneHref} class="btn btn-ghost">Call {business.phone}</a>
       </div>
     </div>
@@ -60,7 +67,7 @@ const feat = featured.map((n) => services.find((s) => s.name === n)!);
         <div class="orn"><span>✦</span></div>
         <div class="menu-actions">
           <a href="/services" class="btn btn-ghost">Full Service Menu</a>
-          <a href={business.bookHref} class="btn" target="_blank" rel="noopener">Book Now</a>
+          <a href={business.bookHref} class="btn">Book Now</a>
         </div>
       </div>
     </div>
@@ -112,14 +119,14 @@ const feat = featured.map((n) => services.find((s) => s.name === n)!);
       <div data-reveal>
         <p class="kicker">Visit the Shop</p>
         <h2 class="h2">Pull up <span class="it">a chair.</span></h2>
-        <p class="lede">Book online through Square, or give us a call and we will get you in.</p>
+        <p class="lede">Book online in under a minute, or give us a call and we will get you in.</p>
         <div class="visit-facts">
           <a href={business.mapsHref} target="_blank" rel="noopener"><em>Address</em>{business.street}<br />{business.city}, {business.region} {business.zip}</a>
           <a href={business.phoneHref}><em>Phone</em>{business.phone}</a>
           <a href={`mailto:${business.email}`}><em>Email</em><span class="email">{business.email}</span></a>
         </div>
         <div class="hero-actions">
-          <a href={business.bookHref} class="btn" target="_blank" rel="noopener">Book on Square</a>
+          <a href={business.bookHref} class="btn">Book Online</a>
           <a href={business.mapsHref} class="btn btn-ghost" target="_blank" rel="noopener">Directions</a>
         </div>
       </div>
